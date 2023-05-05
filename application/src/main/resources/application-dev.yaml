@@ -15,17 +15,19 @@ spring:
         use-last-modified: false
 
 halo:
-  console:
-    proxy:
-      endpoint: http://localhost:3000/
-      enabled: true
+#  console:
+#    proxy:
+#      endpoint: http://localhost:3000/
+#      enabled: true
   security:
     initializer:
       super-admin-username: admin
-      super-admin-password: admin
-  plugin:
-    runtime-mode: development # development, deployment
-  work-dir: ${user.home}/halo2-dev
+      super-admin-password:
+#  plugin:
+#    runtime-mode: development # development, deployment
+#  work-dir: ${user.home}/halo2-dev
+  work-dir: /home/lushanwenku/halo2-dev
+
 logging:
   level:
     run.halo.app: DEBUG
