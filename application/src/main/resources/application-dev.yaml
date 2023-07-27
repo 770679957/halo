@@ -22,7 +22,7 @@ halo:
   security:
     initializer:
       super-admin-username: admin
-      super-admin-password:
+      super-admin-password: Admin123!@#
 #  plugin:
 #    runtime-mode: development # development, deployment
 #  work-dir: ${user.home}/halo2-dev
