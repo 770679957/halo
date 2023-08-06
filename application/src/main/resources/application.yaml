@@ -54,6 +54,8 @@ logging:
       max-file-size: 10MB
       total-size-cap: 1GB
       max-history: 0
+  level:
+    ROOT: debug
 
 management:
   endpoints:
