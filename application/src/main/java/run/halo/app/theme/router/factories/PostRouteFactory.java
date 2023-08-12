@@ -7,8 +7,10 @@ import static run.halo.app.theme.finders.PostPublicQueryService.FIXED_PREDICATE;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -18,6 +20,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -36,8 +39,6 @@ import run.halo.app.extension.GVK;
 import run.halo.app.extension.GroupVersionKind;
 import run.halo.app.extension.MetadataUtil;
 import run.halo.app.extension.ReactiveExtensionClient;
-import run.halo.app.extension.store.UserHistory;
-import run.halo.app.extension.store.UserHistoryService;
 import run.halo.app.infra.exception.NotFoundException;
 import run.halo.app.infra.utils.JsonUtils;
 import run.halo.app.theme.DefaultTemplateEnum;
@@ -63,7 +64,7 @@ public class PostRouteFactory implements RouteFactory {
     private final ReactiveExtensionClient client;
 
     @Autowired
-    private final UserHistoryService userHistoryService;
+    R2dbcEntityTemplate r2dbcEntityTemplate;
 
     @Override
     public RouterFunction<ServerResponse> create(String pattern) {
@@ -105,13 +106,18 @@ public class PostRouteFactory implements RouteFactory {
     @NonNull
     private Mono<ServerResponse> postResponse(ServerRequest request,
         PostPatternVariable patternVariable) {
-        Optional<InetSocketAddress> address = request.remoteAddress();
-        String ip = address.get().getHostString();
-
-        UserHistory userHistory = new UserHistory();
-        userHistory.setIp(ip);
-        userHistory.setPageUrl(patternVariable.slug);
-        userHistoryService.saveUserInfo(userHistory);
+        try {
+            Optional<InetSocketAddress> address = request.remoteAddress();
+            String ip = address.get().getHostString();
+            UserHistory userHistory = new UserHistory();
+            userHistory.setIp(ip);
+            userHistory.setPageUrl(patternVariable.slug);
+            userHistory.setVisitTime(LocalDateTime.now());
+            System.out.println("postResponse userHistory==============================:"+userHistory.toString());
+            r2dbcEntityTemplate.insert(userHistory).subscribe(e-> System.out.println(e));
+        } catch (Exception e) {
+             throw new RuntimeException(e);
+        }
 
         Mono<PostVo> postVoMono = bestMatchPost(patternVariable);
         return postVoMono
